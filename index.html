@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>稿藏 · 本地编辑台</title>
+    <meta name="description" content="在本机阅读、整理和批注自己的文章。" />
+    <link rel="icon" href="./favicon.svg?v=2" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="masthead">
+        <div class="brand"><img class="brand-mark" src="./favicon.svg?v=2" alt="" width="37" height="37" /><div><strong>稿藏</strong><span>私人的作品编辑台</span></div></div>
+        <div class="masthead-actions">
+          <button type="button" class="save-status" id="save-status">正在连接本机…</button>
+          <button type="button" class="quiet-button" id="text-import-open">导入文章</button>
+          <button type="button" class="quiet-button" id="export-button">导出备份</button>
+          <button type="button" class="quiet-button" id="import-button">导入备份</button>
+          <input id="import-file" type="file" accept="application/json,.json" hidden />
+        </div>
+      </header>
+      <div class="recovery-banner" id="recovery-banner" hidden>发现上次未保存的整理记录。恢复会替换当前整理记录，替换前自动留副本。也可先导出；确认文件已保存后再继续阅读。<button type="button" id="recover-pending">恢复这些内容</button><button type="button" id="download-pending">导出上次记录</button><button type="button" id="confirm-pending-export" hidden>备份已保存，继续阅读</button></div>
+
+      <div class="workbench">
+        <aside class="library" aria-label="作品目录">
+          <div class="library-top">
+            <p class="small-label">待翻阅的旧稿</p>
+            <h1>从原文里<br />认出那一篇。</h1>
+            <p class="library-intro">读旧稿，理成篇。拖动文章换主题；选中文字，随手批注。</p>
+            <label for="search-input" class="input-label">找情节或一句正文</label>
+            <input id="search-input" type="search" placeholder="搜索标题、情节或正文中的一句话" autocomplete="off" />
+            <label for="status-filter" class="input-label filter-label">只看</label>
+            <select id="status-filter">
+              <option value="all">全部作品</option>
+              <option value="undecided">仍未决定</option>
+              <option value="collect">有收录候选</option>
+              <option value="revise">有待修改稿</option>
+              <option value="reject">有不收录稿</option>
+            </select>
+            <details class="tag-filter-panel" id="tag-filter-panel">
+              <summary>人物与 CP <span id="tag-filter-caption">全部</span></summary>
+              <div id="tag-filter-options"></div>
+              <button type="button" id="manage-character-colors" class="text-button">角色名字与颜色</button>
+            </details>
+            <div id="active-tag-filter" class="active-tag-filter" hidden></div>
+            <div class="library-actions"><p class="list-count" id="list-count" aria-live="polite">正在整理目录…</p><button type="button" class="text-button" id="new-group">＋ 新主题</button></div>
+          </div>
+          <nav id="group-list" class="group-list" aria-label="情节列表"></nav>
+          <div class="library-foot">抓住 ⠿ 拖动文章或主题。<br />整理记录存于本机，随时可以接着读。</div>
+        </aside>
+
+        <main class="reader" id="reader" tabindex="-1">
+          <div class="reader-placeholder"><div class="placeholder-rule"></div><p>正在展开旧稿…</p></div>
+        </main>
+
+        <aside class="review" id="review" aria-label="反馈与选择">
+          <div class="review-placeholder">选中一稿后，在这里写下评价、批注和筛选记录。</div>
+        </aside>
+      </div>
+    </div>
+    <button type="button" id="selection-action" class="selection-action" hidden>＋ 批注这段文字</button>
+    <dialog id="busy-dialog" aria-label="正在导入"><p role="status">正在导入并保存，请稍候…</p></dialog>
+    <dialog id="tags-dialog" class="tags-dialog">
+      <form id="tags-form">
+        <div class="dialog-heading"><h2>标记这一稿</h2><button type="button" id="close-tags" class="icon-button" aria-label="关闭标签编辑">×</button></div>
+        <p id="tagged-draft-title" class="tagged-draft-title"></p>
+        <div id="selected-draft-tags" class="selected-draft-tags" aria-live="polite"></div>
+        <fieldset class="tag-fieldset"><legend>单人 · 人物出现</legend><div id="character-tag-choices" class="tag-options"></div></fieldset>
+        <fieldset class="tag-fieldset"><legend>CP · 两枚相叠的圆点</legend>
+          <div class="cp-builder"><label for="cp-first" class="sr-only">CP 第一位角色</label><select id="cp-first"></select><span aria-hidden="true">×</span><label for="cp-second" class="sr-only">CP 第二位角色</label><select id="cp-second"></select></div>
+          <div class="cp-builder-actions"><span id="cp-preview"></span><button type="button" id="add-cp-tag" class="secondary-button">加入这对 CP</button></div>
+          <p class="tag-help">一篇有多对 CP，就分别加入多枚标签。左右顺序只用于识别。</p>
+        </fieldset>
+        <div class="dialog-actions"><button type="button" id="edit-tag-colors" class="text-button">角色名字与颜色</button><button type="submit" class="primary-button">保存标签</button></div>
+      </form>
+    </dialog>
+    <dialog id="palette-dialog" class="palette-dialog">
+      <form id="palette-form">
+        <div class="dialog-heading"><h2>角色与代表色</h2><button type="button" id="close-palette" class="icon-button" aria-label="关闭角色颜色设置">×</button></div>
+        <p class="tag-help">添加你自己的角色，选择用于目录标记的代表色。</p>
+        <div id="palette-rows"></div>
+        <div class="new-character-row"><label for="new-character-color" class="sr-only">新角色的代表色</label><input type="color" id="new-character-color" value="#8f9e86" /><label for="new-character-name" class="sr-only">新角色名字</label><input id="new-character-name" placeholder="新增角色的名字" maxlength="40" /><button type="button" id="add-character" class="secondary-button">加入角色</button></div>
+        <div class="dialog-actions"><button type="submit" class="primary-button">保存角色与颜色</button></div>
+      </form>
+    </dialog>
+    <dialog id="annotation-dialog" class="annotation-dialog">
+      <form id="annotation-form">
+        <div class="dialog-heading"><h2 id="annotation-title">写一条批注</h2><button type="button" id="close-annotation" class="icon-button" aria-label="关闭批注">×</button></div>
+        <blockquote id="annotation-quote" class="selected-quote"></blockquote>
+        <label for="annotation-text" class="input-label">你的批注</label>
+        <textarea id="annotation-text" rows="5" required placeholder="这个词想换掉，或者这里的人物反应不对……"></textarea>
+        <div class="dialog-actions"><button type="button" id="delete-annotation" class="text-button danger" hidden>移除批注</button><button type="submit" class="primary-button">保存批注</button></div>
+      </form>
+    </dialog>
+    <dialog id="name-dialog" class="name-dialog" aria-labelledby="name-title">
+      <form id="name-form">
+        <h2 id="name-title">给这一系列文章命名</h2>
+        <label for="theme-name" id="name-label" class="input-label">主题名称</label><input id="theme-name" maxlength="100" required autocomplete="off" aria-describedby="name-hint" />
+        <p id="name-hint" class="name-hint" hidden></p>
+        <div class="dialog-actions"><button type="button" id="name-reset" class="text-button" hidden>恢复原名</button><button type="button" id="name-cancel" class="text-button">取消</button><button type="submit" class="primary-button">保存名称</button></div>
+      </form>
+    </dialog>
+    <dialog id="text-import-dialog"><form id="text-import-form"><h2>导入自己的文章</h2><p>TXT、Markdown，以纯文字阅读；每份不超过2MB，一次最多30份。</p><label for="text-import-files" class="input-label">选择文件</label><input id="text-import-files" type="file" accept=".txt,.md,.markdown" multiple required><label for="text-import-target" class="input-label">放入主题</label><select id="text-import-target"></select><label for="text-import-title" class="input-label">新主题名称</label><input id="text-import-title" maxlength="100" placeholder="例如：夜航"><p id="text-import-error" role="status"></p><div class="dialog-actions"><button id="text-import-cancel" type="button">取消</button><button type="submit">导入</button></div></form></dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>

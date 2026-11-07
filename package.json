@@ -1,0 +1,21 @@
+{
+  "name": "gaocang",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "author": "Astiaguo",
+  "description": "本地稿件整理、版本翻阅与行内批注",
+  "type": "module",
+  "main": "desktop/main.mjs",
+  "scripts": {"start":"electron .", "test":"node --test tests/*.test.mjs", "check:public":"node scripts/check-public.mjs", "build":"electron-builder --publish never", "build:dir":"electron-builder --dir --publish never"},
+  "devDependencies": {"electron":"45.2.3", "electron-builder":"26.18.0"},
+  "build": {
+    "appId":"io.gaocang.desktop", "productName":"稿藏", "asar":true,
+    "files":["desktop/**","src/**","index.html","styles.css","favicon.svg","server.mjs","package.json","LICENSE"],
+    "extraResources":[{"from":"node_modules/electron/dist/LICENSE","to":"licenses/Electron-LICENSE.txt"},{"from":"node_modules/electron/dist/LICENSES.chromium.html","to":"licenses/LICENSES.chromium.html"}],
+    "mac":{"target":["zip","dmg"],"category":"public.app-category.productivity","icon":"build-resources/icon.icns"},
+    "win":{"target":["nsis"],"icon":"build-resources/icon.ico"},
+    "nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true},
+    "directories":{"output":"dist"}
+  }
+}

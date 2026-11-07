@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.runtime/
+data/
+.private/
+*.log
+*.keystore
+*.pem
+.env*
+.DS_Store
